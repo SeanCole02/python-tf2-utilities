@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 # Backup schema directory
 BACKUP_DIR = os.path.join(os.path.expanduser('~'), '.tf2utilities')
 BACKUP_FILE = os.path.join(BACKUP_DIR, 'schema_backup.json')
+LOCK_FILE = os.path.join(BACKUP_DIR, 'schema_fetch.lock')
+LOCK_STALE_SECONDS = 5 * 60
 
 
 # munitionCrate = {
@@ -407,7 +409,7 @@ class Schema:
 
     # Load schema from backup file
     @staticmethod
-    def loadBackup():
+    def loadBackup(maxAge=None):
         try:
             if not os.path.exists(BACKUP_FILE):
                 logger.warning("No backup schema file found")
@@ -416,11 +418,62 @@ class Schema:
             with open(BACKUP_FILE, 'r') as f:
                 schemaData = json.load(f)
 
+            if maxAge is not None:
+                backupTime = schemaData.get("time")
+                if not isinstance(backupTime, (int, float)):
+                    logger.warning("Backup schema missing timestamp; ignoring due to maxAge")
+                    return None
+                if time.time() - backupTime > maxAge:
+                    logger.info("Backup schema is stale; ignoring due to maxAge")
+                    return None
+
             logger.info(f"Schema backup loaded from {BACKUP_FILE}")
             return schemaData
         except Exception as e:
             logger.error(f"Failed to load schema backup: {str(e)}")
             return None
+
+
+    # Acquire a cross-process lock to prevent API request storms
+    @staticmethod
+    def acquireFetchLock(timeout=30, poll=0.2):
+        try:
+            os.makedirs(BACKUP_DIR, exist_ok=True)
+        except Exception:
+            return False
+
+        start = time.time()
+        while True:
+            try:
+                fd = os.open(LOCK_FILE, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                with os.fdopen(fd, 'w') as f:
+                    f.write(str(os.getpid()))
+                return True
+            except FileExistsError:
+                try:
+                    if time.time() - os.path.getmtime(LOCK_FILE) > LOCK_STALE_SECONDS:
+                        os.remove(LOCK_FILE)
+                        continue
+                except FileNotFoundError:
+                    continue
+                except Exception:
+                    return False
+                if time.time() - start >= timeout:
+                    return False
+                time.sleep(poll)
+            except Exception:
+                return False
+
+
+    # Release the fetch lock
+    @staticmethod
+    def releaseFetchLock():
+        try:
+            os.remove(LOCK_FILE)
+        except FileNotFoundError:
+            pass
+        except Exception:
+            logger.warning("Failed to remove schema fetch lock")
 
 
     # Build lookup indexes for fast item searches

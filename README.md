@@ -11,10 +11,13 @@ pip install tf2-utilities
 ```py
 from tf2utilities.main import TF2
 
-tf2 = TF2("apiKey", autoUpdate, updateTime, lite).schema
+tf2 = TF2("apiKey", autoUpdate, updateTime, lite, useBackup, backupMaxAge, fetchLockTimeout).schema
 # autoUpdate - Automatic update schema (True/False). (Default: False)
 # updateTime - Seconds between updates. (Default: 86400 seconds)
 # lite - Lite mode. (Default: False)
+# useBackup - Load schema from disk cache if fresh. (Default: True)
+# backupMaxAge - Max age (seconds) for cache; defaults to updateTime. (Default: None)
+# fetchLockTimeout - Seconds to wait for cross-process fetch lock. (Default: 30)
 
 # Convert SKU to name
 name = tf2.getNameFromSku(sku)
