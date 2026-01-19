@@ -541,10 +541,10 @@ class Schema:
         parts = ["strange part:", "strange cosmetic part:", "strange filter:", "strange count transfer tool", "strange bacon grease"]
         if any(part in name for part in parts):
             schemaItem = self.getItemByItemName(name)
-            if not schemaItem: 
+            if not schemaItem:
                 return item
             item["defindex"] = schemaItem["defindex"]
-            item["quality"] = item.get("quality") or schemaItem.get("item_quality") # default quality
+            item["quality"] = item.get("quality") if item.get("quality") is not None else schemaItem.get("item_quality") # default quality
             return item
 
         wears = {
@@ -789,7 +789,7 @@ class Schema:
                 schemaItem = self.getItemByItemName(name)
                 if not schemaItem: return item
                 item["target"] = schemaItem["defindex"]
-                item["quality"] = item.get("quality") or schemaItem.get("item_quality") # default quality
+                item["quality"] = item.get("quality") if item.get("quality") is not None else schemaItem.get("item_quality") # default quality
             if not item.get("quality"): item["quality"] = 6
             item["output"] = 6526 if item["killstreak"] > 2 else 6523
             item["outputQuality"] = 6
@@ -801,7 +801,7 @@ class Schema:
             if not schemaItem: return item
             item["output"] = schemaItem["defindex"]
             item["outputQuality"] = 14
-            item["quality"] = item.get("quality") or schemaItem.get("item_quality") # default quality
+            item["quality"] = item.get("quality") if item.get("quality") is not None else schemaItem.get("item_quality") # default quality
 
         if "strangifier chemistry set" in name:
             name = name.replace("strangifier chemisty set", "").strip()
@@ -821,7 +821,7 @@ class Schema:
             schemaItem = self.getItemByItemName(name)
             if not schemaItem: return name
             item["target"] = schemaItem["defindex"]
-            item["quality"] = item.get("quality") or schemaItem.get("quality") # default quality
+            item["quality"] = item.get("quality") if item.get("quality") is not None else schemaItem.get("quality") # default quality
 
         if "kit" in name and item.get("killstreak"):
             name = name.replace("kit", "").strip()
@@ -893,13 +893,13 @@ class Schema:
                 for retiredKey in retiredKeys:
                     if retiredKey['name'].lower() == name:
                         item["defindex"] = retiredKey["defindex"]
-                        item["quality"] = item.get("quality") or 6
+                        item["quality"] = item.get("quality") if item.get("quality") is not None else 6
                         return item
 
             schemaItem = self.getItemByNameWithThe(name)
             if not schemaItem: return item
             item["defindex"] = schemaItem["defindex"]
-            item["quality"] = item.get("quality") or schemaItem.get("item_quality") # default quality
+            item["quality"] = item.get("quality") if item.get("quality") is not None else schemaItem.get("item_quality") # default quality
 
             # Fix defindex for Exclusive Genuine items
             if item["quality"] == 1:
