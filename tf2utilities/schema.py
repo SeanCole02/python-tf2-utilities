@@ -620,6 +620,7 @@ class Schema:
             'unusual cap',
             'vintage tyrolean',
             'vintage merryweather',
+            'haunted wick'
             'haunted kraken',
             'haunted forever!',
             'haunted cremation',
