@@ -676,7 +676,7 @@ class Schema:
             if effect == "accursed" and "accursed apparition" in name:
                 # Accursed Apparition never be an unusual
                 continue
-            if effect == "haunted" and "haunted kraken" in name:
+            if effect == "haunted" and ("haunted kraken" in name or "haunted wick" in name):
                 # Skip Haunted effect if name include Haunted Kraken
                 continue
             if effect == "frostbite" and ("frostbite bonnet" in name or "frostbite fit" in name):
