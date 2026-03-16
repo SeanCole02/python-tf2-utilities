@@ -668,6 +668,9 @@ class Schema:
             if effect == "haunted ghosts" and "haunted ghosts" in name and item.get("wear"):
                 # if item name includes Haunted Ghosts and wear is defined, skip cosmetic effect and find warpaint for weapon
                 continue
+            if effect == "stardust" and "stardust" in name and item.get("wear"):
+                # if item name includes Stardust and wear is defined, skip cosmetic effect and find warpaint for weapon
+                continue
             if effect == 'atomic' and ('subatomic' in name or excludeAtomic):
                 continue
             if effect == "spellbound" and ("taunt:" in name or "shred alert" in name):
