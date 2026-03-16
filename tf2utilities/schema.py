@@ -1595,19 +1595,27 @@ class Schema:
                 response = requests.get('https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/tf/resource/tf_proto_obj_defs_english.txt', timeout=10)
                 response.raise_for_status()
 
-                parsed = vdf.loads(response.text)
-                protodefs = parsed["lang"]["Tokens"]
-                paintkits = []
-                for protodef in protodefs:
-                    if protodef not in protodefs: continue
-                    parts = protodef[0:protodef.index(' ')].split('_')
-                    if len(parts) != 3: continue
-                    type = parts[0]
-                    if type != "9": continue
-                    DEF = parts[1]
-                    name = protodefs[protodef]
-                    if name.startswith(DEF + ':'): continue
-                    paintkits.append({"id": DEF, "name": name})
+                try:
+                    parsed = vdf.loads(response.text)
+                    protodefs = parsed["lang"]["Tokens"]
+                    paintkits = []
+                    for protodef in protodefs:
+                        if protodef not in protodefs: continue
+                        parts = protodef[0:protodef.index(' ')].split('_')
+                        if len(parts) != 3: continue
+                        type = parts[0]
+                        if type != "9": continue
+                        DEF = parts[1]
+                        name = protodefs[protodef]
+                        if name.startswith(DEF + ':'): continue
+                        paintkits.append({"id": DEF, "name": name})
+                except Exception as vdfErr:
+                    logger.warning(f'VDF parse failed ({vdfErr}), falling back to regex extraction')
+                    paintkits = []
+                    for m in re.finditer(r'"(9_(\d+)_[^"]+)"\s+"([^"]+)"', response.text):
+                        key, DEF, name = m.group(1), m.group(2), m.group(3)
+                        if not name.startswith(DEF + ':'):
+                            paintkits.append({"id": DEF, "name": name})
                 paintkits = sorted(paintkits, key=lambda x:int(x["id"]))
                 paintkitsObj = {}
                 for paintKit in paintkits:
