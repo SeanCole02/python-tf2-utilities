@@ -1599,7 +1599,7 @@ class Schema:
                 response.raise_for_status()
 
                 try:
-                    parsed = vdf.loads(response.text)
+                    parsed = vdf.loads(response.text.replace('\x00', ''))
                     protodefs = parsed["lang"]["Tokens"]
                     paintkits = []
                     for protodef in protodefs:
@@ -1647,7 +1647,7 @@ class Schema:
             try:
                 response = requests.get('https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/tf/scripts/items/items_game.txt', timeout=10)
                 response.raise_for_status()
-                return vdf.loads(response.text)["items_game"]
+                return vdf.loads(response.text.replace('\x00', ''))["items_game"]
             except Exception as e:
                 lastException = e
                 if attempt < maxRetries - 1:
